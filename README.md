@@ -1,7 +1,7 @@
 # Multi-Head Attention from Scratch
 
-Project assignment for the iCog Labs "Core AI Architecture: Multi-Head
-Attention from Scratch" training (Trainer: Tesnim Abdi, June 2026).
+Project"Core AI Architecture: Multi-Head
+Attention from Scratch".
 
 Implemented using only `nn.Linear` and raw tensor operations
 (`matmul`, `softmax`, `tril`, `view`/`transpose`/`reshape`). No
@@ -29,18 +29,18 @@ run_tests.py                     Single entry point: python run_tests.py
 generate_text.py                 Trains GPTLite on a toy corpus, generates with every
                                   strategy from the same prompt, benchmarks KV-cache speed
 demonstrate_scrambling_bug.py    Isolated demo of the reshape/transpose bug
-                                  the assignment's Part 3 asks you to identify
+                                   
 ```
 
-## `attention/` — the core assignment
+## `attention/` — the core project
 
 | Class | Assignment part | What it adds |
 |---|---|---|
 | `SingleHeadAttention` | Part 1 | Q/K/V projections, scaled dot-product attention, softmax |
 | `CausalSingleHeadAttention` | Part 2 | Lower-triangular causal mask applied to scores before softmax |
 | `CausalSelfAttention` | Part 3 | Splits into `n_head` heads, runs them as one batched op, concatenates, final projection |
-| `CausalSelfAttentionKVCache` | Bonus | Incremental (one-token-at-a-time) decoding using a growing K/V cache |
-| `CausalSelfAttentionTiedQKV` | Bonus | Q/K/V collapsed into a single `Linear(C, 3C)`, numerically identical to the separate-projection version |
+| `CausalSelfAttentionKVCache` | Extra | Incremental (one-token-at-a-time) decoding using a growing K/V cache |
+| `CausalSelfAttentionTiedQKV` | Extra | Q/K/V collapsed into a single `Linear(C, 3C)`, numerically identical to the separate-projection version |
 
 ## `model/` — extension: attention embedded in an actual generator
 
@@ -75,7 +75,7 @@ Run the whole thing end to end:
 python generate_text.py
 ```
 
-## Design choices (for defense)
+## Design choices 
 
 - **Q/K/V use three separate `nn.Linear` layers**, not one — each learns a
   different role from the same input embedding. The bonus weight-tying
@@ -111,7 +111,7 @@ python demonstrate_scrambling_bug.py    # the Part 3 reshape-bug worked example
 python generate_text.py                 # train + generate with all 5 strategies + benchmark
 ```
 
-`tests/` maps directly onto the assignment's own bullet points: attention
+`tests/` maps directly onto the projects's own bullet points: attention
 weights summing to exactly 1.0, generalization across embedding
 dimension, causal invariance under appended tokens, the
 divisibility-assertion requirement, per-head independence (perturbing one
