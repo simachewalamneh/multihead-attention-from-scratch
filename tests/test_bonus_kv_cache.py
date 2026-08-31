@@ -3,7 +3,6 @@ from attention import CausalSelfAttentionKVCache
 
 torch.manual_seed(0)
 
-
 def test_kv_cache_matches_full_recomputation():
     C, N_HEAD = 16, 4
     model = CausalSelfAttentionKVCache(embed_dim=C, n_head=N_HEAD, max_seq_len=32)

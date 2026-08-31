@@ -1,8 +1,3 @@
-"""
-Run every test module and report a single pass/fail summary.
-Usage: python run_tests.py
-(Or, if pytest is installed: pytest tests/ -v)
-"""
 import importlib
 import sys
 import traceback
