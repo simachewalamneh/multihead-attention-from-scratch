@@ -1,6 +1,3 @@
-"""
-Part 3 — Multi-Head Causal Self-Attention.
-"""
 import math
 import torch
 import torch.nn as nn
@@ -56,4 +53,5 @@ class CausalSelfAttention(nn.Module):
 
         merged = self._merge_heads(head_out, B, T)                     # (B, T, C)
         out = self.out_proj(merged)                                    # (B, T, C)
+        #The projection mixes information across the heads.
         return out
