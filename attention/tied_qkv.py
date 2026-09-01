@@ -1,27 +1,12 @@
-"""
-Bonus — Weight Tying: one Linear producing Q, K, V together.
-"""
+
 import math
 import torch
 import torch.nn as nn
 
 from .multi_head import CausalSelfAttention
 
-
 class CausalSelfAttentionTiedQKV(nn.Module):
-    """
-    Collapses q_proj/k_proj/v_proj into ONE nn.Linear(C, 3*C), then slices
-    its output into three chunks. This is a REFACTOR, not an architecture
-    change: a single Linear(C, 3C) has weight matrix W of shape (3C, C),
-    which is exactly the row-stack of three independent (C, C) weight
-    matrices W_q, W_k, W_v. Multiplying by the stacked matrix and then
-    slicing the result into three (.,C) pieces gives IDENTICAL numbers to
-    multiplying by each of the three separately — it's the same
-    computation, batched into one matmul call for a (usually) small
-    speed win, not a new inductive bias. This is the standard trick used
-    in GPT-2/nanoGPT-style implementations (c_attn).
-    """
-
+ 
     def __init__(self, embed_dim: int, n_head: int, max_seq_len: int = 1024):
         super().__init__()
         assert embed_dim % n_head == 0
