@@ -27,7 +27,7 @@ class CausalSelfAttentionKVCache(CausalSelfAttention):
         mask = self.causal_mask[T_total - T_new:T_total, :T_total]
         scores = scores.masked_fill(~mask, float("-inf"))
 
-        attn_weights = torch.softmax(scores, dim=-1)
+        attn_weights = torch.softmax(scores, dim=-1) #last dimension represents the key/token positions
         head_out = attn_weights @ V                                        # (B, nh, T_new, hd)
 
         merged = self._merge_heads(head_out, B, T_new)
