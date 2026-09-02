@@ -18,7 +18,6 @@ class MLP(nn.Module):
         x = self.fc_out(x)
         return self.dropout(x)
 
-
 class TransformerBlock(nn.Module):
 
     def __init__(self, embed_dim: int, n_head: int, max_seq_len: int, dropout: float = 0.0):
