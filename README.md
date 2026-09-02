@@ -11,7 +11,7 @@ Implemented using only `nn.Linear` and raw tensor operations
 ## Structure
 
 ```
-attention/                      The assignment itself — one module per part
+attention/                      The tasks itself — one module per part
   single_head.py                 Part 1: SingleHeadAttention
   causal_single_head.py          Part 2: CausalSingleHeadAttention
   multi_head.py                  Part 3: CausalSelfAttention
@@ -19,6 +19,9 @@ attention/                      The assignment itself — one module per part
   tied_qkv.py                    Bonus:  CausalSelfAttentionTiedQKV
   __init__.py                    re-exports all five classes
 
+data/                            Datasets for training and generation
+ amharic_ethiopia.txt           Amharic text corpus
+ tinyshakespeare.txt            Tiny Shakespeare text corpus
 model/                           Extension: attention -> actual text generation
   block.py                       TransformerBlock (attention + MLP + residuals + pre-norm)
   gpt.py                         GPTLite (embeddings + N blocks + vocab head) and beam_search
@@ -34,7 +37,7 @@ demonstrate_scrambling_bug.py    Isolated demo of the reshape/transpose bug
 
 ## `attention/` — the core project
 
-| Class | Assignment part | What it adds |
+| Class | Task part | What it adds |
 |---|---|---|
 | `SingleHeadAttention` | Part 1 | Q/K/V projections, scaled dot-product attention, softmax |
 | `CausalSingleHeadAttention` | Part 2 | Lower-triangular causal mask applied to scores before softmax |
