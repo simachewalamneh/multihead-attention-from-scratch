@@ -11,7 +11,6 @@ MODULES = [
     "tests.test_model_generation",
 ]
 
-
 def run_module(name):
     mod = importlib.import_module(name)
     test_fns = [getattr(mod, n) for n in dir(mod) if n.startswith("test_")]
