@@ -46,7 +46,7 @@ class GPTLite(nn.Module):
         new_cache_list = []
         for i, block in enumerate(self.blocks):
             block_cache = cache_list[i] if cache_list is not None else None
-            x, updated_cache = block(x, cache=block_cache)
+            x, updated_cache = block(x, cache=block_cache) #gateway into the actual Transformer mathematics
             new_cache_list.append(updated_cache)
 
         x = self.ln_final(x)
@@ -94,7 +94,6 @@ class GPTLite(nn.Module):
 
         return generated
 
-
 @torch.no_grad()
 def beam_search(model: GPTLite, idx: torch.Tensor, max_new_tokens: int, beam_width: int = 4) -> torch.Tensor:
     model.eval()
@@ -112,10 +111,7 @@ def beam_search(model: GPTLite, idx: torch.Tensor, max_new_tokens: int, beam_wid
             for lp, tok in zip(top_log_probs.tolist(), top_indices.tolist()):
                 new_seq = torch.cat([seq, torch.tensor([[tok]], device=device)], dim=1)
                 candidates.append((new_seq, score + lp))
-
-        # Keep only the top beam_width candidates across ALL beams'
-        # expansions (not top-k per beam) — this is what lets a single
-        # strong beam dominate, or several mediocre beams get pruned.
+    
         candidates.sort(key=lambda c: c[1], reverse=True)
         beams = candidates[:beam_width]
 
