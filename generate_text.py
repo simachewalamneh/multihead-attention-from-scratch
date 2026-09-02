@@ -1,20 +1,3 @@
-"""
-End-to-end demo: pick a training corpus interactively, train GPTLite on it,
-then generate text with every decoding strategy from model/sampling.py plus
-beam search, comparing them side by side on the SAME trained model and
-SAME prompt — with the prompt entered by you interactively at the end.
-
-Two datasets to choose from at runtime:
-    1. Amharic Ethiopia corpus  (data/amharic_ethiopia.txt, ~1,800 chars)
-    2. TinyShakespeare           (data/tinyshakespeare.txt, ~1.1M chars)
-
-Also benchmarks generation speed with vs. without the KV-cache, to show
-concretely why Part 3's bonus (attention/kv_cache.py) matters once
-attention is actually embedded in a generation loop instead of a single
-forward pass.
-
-Run: python generate_text.py
-"""
 import os
 import time
 import torch
@@ -30,8 +13,6 @@ DATASETS = {
         "label": "Amharic Ethiopia corpus",
         "path": os.path.join(DATA_DIR, "amharic_ethiopia.txt"),
         "default_prompt": "ኢትዮጵያ ",
-        # Small corpus (~1,800 chars) -> fewer steps, smaller context, no
-        # train/val split (not enough data to hold anything out meaningfully).
         "block_size": 48,
         "max_seq_len": 220,
         "n_steps": 800,
@@ -41,15 +22,11 @@ DATASETS = {
         "label": "TinyShakespeare",
         "path": os.path.join(DATA_DIR, "tinyshakespeare.txt"),
         "default_prompt": "ROMEO:\n",
-        # Large corpus (~1.1M chars) -> more steps, bigger context, and a
-        # held-out val split so we can check the model isn't just memorizing.
-        "block_size": 64,
         "max_seq_len": 160,
         "n_steps": 2000,
         "use_val_split": True,
     },
 }
-
 
 def choose_dataset() -> dict:
     print("Choose a training corpus:")
@@ -78,10 +55,8 @@ stoi = {ch: i for i, ch in enumerate(chars)}
 itos = {i: ch for i, ch in enumerate(chars)}
 vocab_size = len(chars)
 
-
 def encode(s: str) -> torch.Tensor:
     return torch.tensor([stoi[c] for c in s], dtype=torch.long)
-
 
 def decode(ids) -> str:
     return "".join(itos[int(i)] for i in ids)
@@ -100,7 +75,6 @@ else:
     # Corpus too small to meaningfully hold out a validation slice —
     # train on all of it, same as the original toy-corpus demo.
     train_data, val_data = data, data
-
 
 def get_batch(split: str = "train", batch_size: int = 32):
     d = train_data if split == "train" else val_data
@@ -122,10 +96,8 @@ def estimate_val_loss(model, n_batches: int = 20) -> float:
     model.train()
     return sum(losses) / len(losses)
 
-
-# ---------------------------------------------------------------------------
 # Build and train GPTLite on the chosen corpus.
-# ---------------------------------------------------------------------------
+
 model = GPTLite(
     vocab_size=vocab_size,
     embed_dim=64,
@@ -163,18 +135,10 @@ for step in range(N_STEPS):
 model.eval()
 
 
-# ---------------------------------------------------------------------------
 # Prompt entered interactively by the user, then generated with every
-# decoding perspective from model/sampling.py so you can compare them
-# side by side on the SAME prompt.
-# ---------------------------------------------------------------------------
+
 def read_prompt() -> str:
-    """
-    Ask the user for a prompt, and silently drop any character the model's
-    vocabulary has never seen (the model can only ever produce characters
-    it saw during training, so an unseen character has no embedding to
-    look up at all).
-    """
+  
     default = dataset_cfg["default_prompt"]
     while True:
         raw = input(f"\nEnter a prompt (blank = {default!r}): ").strip()
@@ -211,10 +175,8 @@ beam_out = beam_search(model, prompt_ids, max_new_tokens=MAX_NEW_TOKENS, beam_wi
 print(f"\n--- beam_search (width=4) ---\n{decode(beam_out[0])}")
 
 
-# ---------------------------------------------------------------------------
 # KV-cache vs. no-cache speed benchmark — same model, same prompt, same
-# number of generated tokens, only the caching strategy differs.
-# ---------------------------------------------------------------------------
+
 print("\n" + "=" * 60)
 print("KV-cache speed benchmark")
 print("=" * 60)
