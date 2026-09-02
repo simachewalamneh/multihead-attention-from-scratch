@@ -1,11 +1,9 @@
 import torch
 import torch.nn.functional as F
 
-
 def greedy(logits: torch.Tensor) -> int:
     #Always take the single highest-probability token.
     return int(torch.argmax(logits).item())
-
 
 def temperature_sample(logits: torch.Tensor, temperature: float = 1.0) -> int:
    
@@ -14,7 +12,6 @@ def temperature_sample(logits: torch.Tensor, temperature: float = 1.0) -> int:
     scaled = logits / max(temperature, 1e-8)
     probs = F.softmax(scaled, dim=-1)
     return int(torch.multinomial(probs, num_samples=1).item())
-
 
 def top_k_sample(logits: torch.Tensor, k: int = 10, temperature: float = 1.0) -> int:
     """
@@ -27,7 +24,6 @@ def top_k_sample(logits: torch.Tensor, k: int = 10, temperature: float = 1.0) ->
     probs = F.softmax(top_values, dim=-1)
     choice = torch.multinomial(probs, num_samples=1)
     return int(top_indices[choice].item())
-
 
 def top_p_sample(logits: torch.Tensor, p: float = 0.9, temperature: float = 1.0) -> int:
     """
