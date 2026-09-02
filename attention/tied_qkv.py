@@ -22,7 +22,8 @@ class CausalSelfAttentionTiedQKV(nn.Module):
 
     def load_from_separate(self, other: CausalSelfAttention):
         """Copy weights from a CausalSelfAttention so outputs can be compared
-        numerically (used by the bonus equivalence test)."""
+        numerically ."""
+        #it forces both models to have the exact same numbers in their weights (copying W_q, W_k, W_v into the right row-slices of qkv_proj.weight
         with torch.no_grad():
             self.qkv_proj.weight.copy_(
                 torch.cat([other.q_proj.weight, other.k_proj.weight, other.v_proj.weight], dim=0)
