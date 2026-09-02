@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+import torch.nn as nn  #importing pytourch Nural net. component
 
 from model.block import TransformerBlock
 from model.sampling import greedy, temperature_sample, top_k_sample, top_p_sample
@@ -28,7 +28,9 @@ class GPTLite(nn.Module):
         ])
         self.ln_final = nn.LayerNorm(embed_dim)
         self.head = nn.Linear(embed_dim, vocab_size, bias=False)
-        self.head.weight = self.token_embed.weight
+        self.head.weight = self.token_embed.weight 
+        #Use the same weight matrix for input embeddings and output projection.
+        # this is called weight tying  why we use weight tying ?
 
     def forward(self, idx: torch.Tensor, cache_list: list | None = None):
        
@@ -51,7 +53,7 @@ class GPTLite(nn.Module):
         logits = self.head(x)                                   # (B, T, vocab_size)
         return logits, new_cache_list
 
-    @torch.no_grad()
+    @torch.no_grad() #prevents PyTorch from building the backward computation graph.
     def generate(
         self,
         idx: torch.Tensor,
@@ -63,7 +65,7 @@ class GPTLite(nn.Module):
         use_cache: bool = True,
     ) -> torch.Tensor:
     
-        self.eval()
+        self.eval() #switch the model in to evaluation mode
         strategy_fn = {
             "greedy": lambda logits: greedy(logits),
             "temperature": lambda logits: temperature_sample(logits, temperature),
@@ -81,13 +83,9 @@ class GPTLite(nn.Module):
                 next_id = strategy_fn(logits[0, -1])
                 next_tensor = torch.tensor([[next_id]], device=idx.device)
                 generated = torch.cat([generated, next_tensor], dim=1)
-                # Only the NEW token goes through forward now — the cache
-                # already holds everything before it.
                 logits, cache_list = self.forward(next_tensor, cache_list=cache_list)
         else:
             for _ in range(max_new_tokens):
-                # No cache: recompute attention over the full sequence so
-                # far, every single step (the O(T^2) baseline).
                 cropped = generated[:, -self.max_seq_len:]
                 logits, _ = self.forward(cropped, cache_list=None)
                 next_id = strategy_fn(logits[0, -1])
