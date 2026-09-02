@@ -7,8 +7,7 @@ def greedy(logits: torch.Tensor) -> int:
 
 def temperature_sample(logits: torch.Tensor, temperature: float = 1.0) -> int:
    
-   # Divide logits by temperature before softmax, then sample.
-   #    
+   # Divide logits by temperature before softmax, then sample.   
     scaled = logits / max(temperature, 1e-8)
     probs = F.softmax(scaled, dim=-1)
     return int(torch.multinomial(probs, num_samples=1).item())
@@ -36,9 +35,6 @@ def top_p_sample(logits: torch.Tensor, p: float = 0.9, temperature: float = 1.0)
     sorted_probs, sorted_indices = torch.sort(probs, descending=True)
     cumulative = torch.cumsum(sorted_probs, dim=-1)
 
-    # Keep the smallest prefix whose cumulative probability >= p.
-    # We always keep at least 1 token, even if its own probability
-    # already exceeds p.
     cutoff = torch.searchsorted(cumulative, torch.tensor(p)).item() + 1
     cutoff = max(cutoff, 1)
 
