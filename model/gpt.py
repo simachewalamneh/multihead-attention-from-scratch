@@ -1,31 +1,8 @@
-"""
-GPTLite — a minimal decoder-only Transformer for text generation, built
-entirely on top of the from-scratch attention modules in attention/.
-
-This is the point of the whole assignment applied end-to-end: attention
-alone doesn't generate text. It's one ingredient. What actually generates
-text is:
-
-    tokens -> [token embedding + positional embedding]
-           -> N x TransformerBlock (attention + MLP, each with residuals)
-           -> final LayerNorm
-           -> linear projection to vocabulary logits
-           -> a DECODING STRATEGY that turns logits into a chosen token
-           -> feed that token back in, repeat
-
-Everything upstream of "decoding strategy" is what earlier parts of this
-project built. Everything from "decoding strategy" onward is what makes
-generation feel different depending on how you read the model's output
-distribution — see model/sampling.py for four different perspectives on
-that last step, and beam_search below for a fifth that operates on whole
-sequences instead of one token at a time.
-"""
 import torch
 import torch.nn as nn
 
 from model.block import TransformerBlock
 from model.sampling import greedy, temperature_sample, top_k_sample, top_p_sample
-
 
 class GPTLite(nn.Module):
     def __init__(
@@ -40,14 +17,7 @@ class GPTLite(nn.Module):
         super().__init__()
         self.max_seq_len = max_seq_len
         self.n_layer = n_layer
-
-        # Token embedding: learned lookup table, one vector per vocabulary
-        # entry. Positional embedding: a SEPARATE learned vector per
-        # sequence position, added on top. Attention itself has no notion
-        # of order (it's a weighted sum over a SET of tokens) — without
-        # positional information, "the cat sat" and "sat the cat" would
-        # produce identical attention patterns. Positional embeddings are
-        # what inject "where in the sequence am I" into each token.
+    
         self.token_embed = nn.Embedding(vocab_size, embed_dim)
         self.pos_embed = nn.Embedding(max_seq_len, embed_dim)
         self.dropout = nn.Dropout(dropout)
@@ -58,32 +28,13 @@ class GPTLite(nn.Module):
         ])
         self.ln_final = nn.LayerNorm(embed_dim)
         self.head = nn.Linear(embed_dim, vocab_size, bias=False)
-
-        # Weight tying: the input token-embedding matrix and the output
-        # vocabulary-projection matrix are forced to be the SAME weights
-        # (transposed). Intuition: "the vector that represents token X
-        # when reading it in" and "the vector that says how much the
-        # model's current belief looks like token X when writing it out"
-        # are naturally the same kind of object, and tying them roughly
-        # halves the embedding parameter count with usually little to no
-        # quality loss. (This is a different weight-tying than the Q/K/V
-        # tying in attention/tied_qkv.py — same NAME, different tensors
-        # being tied, worth being precise about the distinction if asked.)
         self.head.weight = self.token_embed.weight
 
     def forward(self, idx: torch.Tensor, cache_list: list | None = None):
-        """
-        idx: (B, T) token ids.
-        cache_list: None, or a list of per-block KV caches (for
-            incremental decoding — see generate()).
-        Returns (logits, new_cache_list) where logits is (B, T, vocab_size).
-        """
+       
         B, T = idx.shape
         device = idx.device
 
-        # Positions must account for how much history is already cached:
-        # if we're mid-generation with a cache of length T_cache, the new
-        # token(s) occupy absolute positions [T_cache, T_cache + T).
         T_cache = cache_list[0]["K"].shape[2] if cache_list is not None else 0
         positions = torch.arange(T_cache, T_cache + T, device=device)
 
@@ -111,17 +62,7 @@ class GPTLite(nn.Module):
         top_p: float = 0.9,
         use_cache: bool = True,
     ) -> torch.Tensor:
-        """
-        Autoregressive generation: repeatedly predict the next token and
-        append it, one perspective (strategy) at a time.
-
-        strategy in {"greedy", "temperature", "top_k", "top_p"}.
-
-        use_cache=True routes through the KV-cache path (attention/kv_cache.py)
-        so each new token only costs O(T) instead of O(T^2) recomputation —
-        see benchmark_kv_cache_speed() in generate_text.py for a direct
-        timed comparison against use_cache=False.
-        """
+    
         self.eval()
         strategy_fn = {
             "greedy": lambda logits: greedy(logits),
@@ -158,23 +99,6 @@ class GPTLite(nn.Module):
 
 @torch.no_grad()
 def beam_search(model: GPTLite, idx: torch.Tensor, max_new_tokens: int, beam_width: int = 4) -> torch.Tensor:
-    """
-    A fifth perspective on decoding, operating on WHOLE SEQUENCES rather
-    than one token at a time: track the `beam_width` highest cumulative
-    log-probability sequences at every step, expand each by one token,
-    and keep only the best `beam_width` survivors.
-
-    Perspective: greedy commits irrevocably to the single best token at
-    every step, which can lock out a sequence that would have been better
-    OVERALL but required a locally-worse first choice. Beam search hedges
-    against that by keeping several candidate continuations alive at
-    once. It trades more compute (beam_width times the forward passes)
-    for a better ARGMAX-style approximation of the single most likely
-    whole sequence — note this makes it a fundamentally different
-    perspective from the sampling-based strategies above: beam search is
-    still deterministic and still trying to maximize likelihood, just
-    over sequences instead of single tokens.
-    """
     model.eval()
     device = idx.device
 
