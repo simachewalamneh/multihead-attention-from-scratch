@@ -1,25 +1,9 @@
-"""
-One Transformer decoder block: attention sub-layer + MLP sub-layer, each
-wrapped in a residual connection and preceded by LayerNorm (pre-norm, the
-standard GPT-2-style arrangement — more stable to train than post-norm for
-deep stacks).
-"""
 import torch
 import torch.nn as nn
 
 from attention import CausalSelfAttentionKVCache
 
-
 class MLP(nn.Module):
-    """
-    The "feed-forward" sub-layer. Attention mixes information ACROSS
-    tokens (each token's new value depends on other tokens); the MLP is
-    the sub-layer that processes EACH token independently and gives the
-    model non-linear capacity to actually transform what attention
-    gathered, not just re-weight and re-sum it. The standard widening
-    factor is 4x: project up to 4*embed_dim, apply a non-linearity, project
-    back down.
-    """
 
     def __init__(self, embed_dim: int, dropout: float = 0.0):
         super().__init__()
@@ -36,22 +20,6 @@ class MLP(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    """
-    x = x + Attention(LayerNorm(x))
-    x = x + MLP(LayerNorm(x))
-
-    Two design choices worth defending:
-    - Pre-norm (LayerNorm BEFORE the sub-layer, not after): with post-norm,
-      gradients have to flow back through LayerNorm at every block, which
-      becomes unstable as depth grows. Pre-norm keeps a clean residual
-      "highway" — the raw `x + ...` path never has a LayerNorm sitting in
-      it — which is why virtually every modern LLM uses pre-norm.
-    - The residual connections themselves (`x = x + ...`, not `x =
-      sublayer(x)`) are what let this stack to arbitrary depth in the
-      first place: they guarantee that even if a given block's sub-layer
-      learns to contribute ~nothing, gradients and information can still
-      flow straight through via the `+ x` identity path.
-    """
 
     def __init__(self, embed_dim: int, n_head: int, max_seq_len: int, dropout: float = 0.0):
         super().__init__()
