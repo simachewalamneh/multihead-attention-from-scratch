@@ -22,4 +22,3 @@ print("\nCORRECT view(B,T,nh,hd).transpose(1,2) -> (B, n_head, T, head_dim):")
 print(correct[0])
 print("Every row is still traceable to exactly one original token's values,")
 print("just sliced into its head_dim chunk for this head.")
-

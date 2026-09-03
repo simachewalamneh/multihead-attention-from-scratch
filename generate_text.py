@@ -134,7 +134,6 @@ for step in range(N_STEPS):
 
 model.eval()
 
-
 # Prompt entered interactively by the user, then generated with every
 
 def read_prompt() -> str:

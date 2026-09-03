@@ -125,10 +125,20 @@ generation pipeline itself (shape, determinism, prompt preservation,
 decoding-strategy bounds).
 # References
 
-1. **Vaswani, A., et al. (2017). *Attention Is All You Need*.**
+1. **Vaswani, A., et al. (2017).** *Attention Is All You Need.*
+
    Foundational reference for the Transformer architecture, scaled dot-product attention, and multi-head attention.
+
    [Paper](https://arxiv.org/abs/1706.03762)
 
 2. **Transformer Core Concepts and Implementation Material.**
+
    Reference material for understanding Transformer fundamentals, attention, tensor operations, and implementation concepts.
+
    [Reference Material](https://docs.google.com/document/d/1qYFnO9GJ0nJ51TXD36huJSWsc-EzwV3tdSiNeSfwcQY/edit?tab=t.0)
+
+3. **Transformer Concept Note.**
+
+   Concept note covering the fundamental concepts and architecture of Transformers, including attention mechanisms, sequence modeling, and related implementation concepts.
+
+   [Transformer Concept Note](https://drive.google.com/file/d/1ZrFEdlJ2nMwjyjYZcgY2chr0yDmJeG6Q/view?usp=sharing)
