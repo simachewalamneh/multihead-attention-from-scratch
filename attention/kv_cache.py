@@ -20,7 +20,7 @@ class CausalSelfAttentionKVCache(CausalSelfAttention):
         else:
             K, V = K_new, V_new
 
-        T_total = K.shape[2] #take the 3rd dimension
+        T_total = K.shape[2] #take the  3rd dimension
 
         scores = (Q_new @ K.transpose(-2, -1)) / math.sqrt(self.head_dim)  # (B, nh, T_new, T_total)
      
