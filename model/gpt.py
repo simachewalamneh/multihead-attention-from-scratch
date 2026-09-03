@@ -29,9 +29,7 @@ class GPTLite(nn.Module):
         self.ln_final = nn.LayerNorm(embed_dim)
         self.head = nn.Linear(embed_dim, vocab_size, bias=False)
         self.head.weight = self.token_embed.weight 
-        #Use the same weight matrix for input embeddings and output projection.
-        # this is called weight tying  why we use weight tying ?
-
+      
     def forward(self, idx: torch.Tensor, cache_list: list | None = None):
        
         B, T = idx.shape
